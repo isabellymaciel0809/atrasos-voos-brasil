@@ -4,7 +4,10 @@ Análise de **810 mil voos domésticos** (out/2025 – set/2026) com dados ofici
 
 > **Resumo:** 1 em cada 6 voos domésticos chega atrasado. O problema se concentra em **Guarulhos**, que atrasa quase o dobro da média nacional, e **cresce ao longo do dia**. Os rankings de pontualidade das companhias **enganam** quando não levam o aeroporto em conta.
 
+📊 **Painel interativo:** filtre por período, companhia e aeroporto ([como rodar](#painel-interativo))
 📓 **[Ver a análise completa (notebook)](notebooks/analise_atrasos.ipynb)**
+
+![Painel interativo](reports/figures/painel.png)
 
 ---
 
@@ -62,6 +65,8 @@ ANAC (CSV mensal) ──► src/download.py ──► data/raw/
                                               │
               notebooks/analise_atrasos.ipynb ▼  análise SQL + visualizações (src/graficos.py)
                                     reports/figures/
+
+                    sql/03_exportar_app.sql  ──► app/data/*.parquet (3 MB) ──► app/app.py (Streamlit)
 ```
 
 **Decisões técnicas**
@@ -81,6 +86,15 @@ python src/download.py          # baixa out/2025–set/2026 (~300 MB); aceita --
 python src/build_db.py          # cria data/voos.duckdb
 jupyter notebook notebooks/analise_atrasos.ipynb
 ```
+
+### Painel interativo
+O painel lê uma versão enxuta dos dados (`app/data/`, 3 MB, já incluída no repositório). Por isso ele roda sem baixar nada:
+
+```bash
+streamlit run app/app.py
+```
+
+Ele tem filtros de período, companhia, aeroporto de origem e limiar de atraso (15/30/60 min), e cinco abas: aeroportos, horários, companhias (com e sem GRU), evolução diária e ranking de rotas. As consultas são feitas em SQL (DuckDB) direto sobre os arquivos Parquet.
 
 ## Limitações e próximos passos
 - A coluna de justificativa (causa do atraso) vem vazia na base pública, e não há prefixo da aeronave. Por isso a causa é inferida pelos padrões de local e horário.

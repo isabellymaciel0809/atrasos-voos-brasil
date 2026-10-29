@@ -1,5 +1,6 @@
 """Constrói o banco DuckDB (data/voos.duckdb) executando os scripts de sql/ em ordem."""
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -16,9 +17,11 @@ def main():
     if not list((ROOT / "data" / "raw").glob("VRA_*.csv")):
         sys.exit("Nenhum CSV em data/raw. Rode antes: python src/download.py")
 
+    # os caminhos nos .sql (leitura e escrita) são relativos à raiz do projeto
+    os.chdir(ROOT)
+    (ROOT / "app" / "data").mkdir(parents=True, exist_ok=True)
+
     con = duckdb.connect(str(DB_PATH))
-    # os caminhos nos .sql são relativos à raiz do projeto
-    con.execute(f"set file_search_path = '{ROOT.as_posix()}'")
     for script in scripts:
         inicio = time.perf_counter()
         con.execute(script.read_text(encoding="utf-8"))
